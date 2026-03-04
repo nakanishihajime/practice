@@ -36,7 +36,7 @@ if (isset($_SESSION['user_id'])) {
 
         <a href="register_user.php">
             <button type="button" class="ant-btn ant-btn-default" style="border-color: #d9d9d9; color: #595959;">
-                管理者アカウントを新規登録
+                管理者アカウントを新規登録!
             </button>
         </a>
     </div>
