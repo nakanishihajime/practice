@@ -11,6 +11,7 @@ if (isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <title>顧客管理システム - ログイン</title>
+    <?php require_once __DIR__. '/inc/head.php'; ?>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/antd/4.24.15/antd.min.css" />
     <style>
         body { background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: "Helvetica Neue", Arial, sans-serif; }
@@ -36,10 +37,11 @@ if (isset($_SESSION['user_id'])) {
 
         <a href="register_user.php">
             <button type="button" class="ant-btn ant-btn-default" style="border-color: #d9d9d9; color: #595959;">
-                管理者アカウントを新規登録!!
+                管理者アカウントを新規登録
             </button>
             
         </a>
     </div>
+        <?php require_once __DIR__. '/inc/fotter.php'; ?>
 </body>
 </html>

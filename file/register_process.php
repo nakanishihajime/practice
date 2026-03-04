@@ -1,6 +1,6 @@
 <?php
 require_once 'inc/functions.php';
-
+require_once __DIR__. '/inc/head.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $display_name = $_POST['display_name'];
     $user_id = $_POST['user_id'];
@@ -37,3 +37,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 }
+require_once __DIR__. '/inc/fotter.php'; ?>
