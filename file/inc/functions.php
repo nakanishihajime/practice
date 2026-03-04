@@ -58,4 +58,38 @@ function login_user($user) {
     $_SESSION['user_id'] = $user['user_id'];
     $_SESSION['display_name'] = $user['display_name'];
 }
+
+/**
+ * 新規顧客を登録する関数
+ * @param array $data フォームから送られてきたデータの配列
+ * @return bool 成功したらtrue, 失敗したらfalse
+ */
+function insert_customer($data) {
+    $pdo = get_db_connection();
+
+    // SQL文の準備
+    // 今後カラムが増えた場合、ここを書き足すだけで対応できます
+    $sql = "INSERT INTO customers (name, address, tel, company, is_party_member) 
+            VALUES (:name, :address, :tel, :company, :is_party_member)";
+
+    $stmt = $pdo->prepare($sql);
+
+    // 値をバインド（セキュリティ対策：SQLインジェクション防止）
+    $stmt->bindValue(':name', $data['name'], PDO::PARAM_STR);
+    $stmt->bindValue(':address', $data['address'], PDO::PARAM_STR);
+    $stmt->bindValue(':tel', $data['tel'], PDO::PARAM_STR);
+    $stmt->bindValue(':company', $data['company'], PDO::PARAM_STR);
+    
+    // checkboxやradioの未選択対策を含めた数値変換
+    $is_party = isset($data['is_party_member']) ? (int)$data['is_party_member'] : 0;
+    $stmt->bindValue(':is_party_member', $is_party, PDO::PARAM_INT);
+
+    try {
+        return $stmt->execute();
+    } catch (PDOException $e) {
+        // エラーログを記録するなど（学習用として一旦表示）
+        error_log("登録エラー: " . $e->getMessage());
+        return false;
+    }
+}
 ?>
