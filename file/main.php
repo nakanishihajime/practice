@@ -1,4 +1,5 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) { session_start(); } // これを追加
 require_once 'inc/functions.php';
 include 'inc/head.php';
 
@@ -15,15 +16,13 @@ if (!isset($_SESSION['user_id'])) {
         </div>
     <?php endif; ?>
 
-    <h1 style="color: #001529; margin-bottom: 20px;">政治家専用顧客管理ツール「管理くん」</h1>
-
     <div class="ant-tabs ant-tabs-top">
         <div class="ant-tabs-nav" role="tablist" style="margin-bottom: 30px;">
             <div class="ant-tabs-nav-wrap">
                 <div class="ant-tabs-nav-list" style="display: flex; border-bottom: 1px solid #f0f0f0; width: 100%;">
                     
                     <div class="ant-tabs-tab ant-tabs-tab-active" style="padding: 12px 24px;">
-                        <div class="ant-tabs-tab-btn" style="color: #1890ff; font-weight: bold;">🏠 メニュー</div>
+                        <div class="ant-tabs-tab-btn" style="color: #1890ff; font-weight: bold;">🏠 ホーム</div>
                     </div>
 
                     <a href="customer_search.php" class="ant-tabs-tab" style="padding: 12px 24px; text-decoration: none; color: rgba(0,0,0,0.85);">
@@ -62,4 +61,4 @@ if (!isset($_SESSION['user_id'])) {
     </div>
 </div>
 
-<?php include 'inc/footer.php'; ?>
+<?php include 'inc/fotter.php'; ?>

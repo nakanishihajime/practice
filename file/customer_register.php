@@ -1,56 +1,106 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 require_once 'inc/functions.php';
-include 'inc/head.php'; // ヘッダー（「管理くん」ロゴやナビが表示される）
+include 'inc/head.php';
 
-// ログインチェック（未ログインなら追い返す）
-if (!isset($_SESSION['user_id'])) {
-    header('Location: index.php');
-    exit;
+if (!isset($_SESSION['user_id'])) { header('Location: index.php'); exit; }
+
+$columns = get_config_columns();
+
+// ヘルパー関数：項目名からデータを取得
+function find_col($cols, $name) {
+    foreach ($cols as $c) { if ($c['name'] === $name) return $c; }
+    return null;
 }
 ?>
 
-<div style="max-width: 700px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 8px; shadow: 0 2px 8px rgba(0,0,0,0.09);">
-    <h2 style="margin-bottom: 30px; border-bottom: 2px solid #1890ff; padding-bottom: 10px;">
-        👤 顧客新規登録
-    </h2>
+<div style="max-width: 1000px; margin: 20px auto; padding: 0 20px;">
+    <h1 style="color: #001529; margin-bottom: 20px;">政治家専用顧客管理ツール「管理くん」</h1>
 
-    <form action="customer_process.php" method="POST">
-        <div style="margin-bottom: 20px;">
-            <label style="font-weight: bold; display: block; margin-bottom: 8px;">氏名 <span style="color: red;">*</span></label>
-            <input type="text" name="name" class="ant-input" placeholder="例：政治 太郎" required>
-        </div>
-
-        <div style="margin-bottom: 20px;">
-            <label style="font-weight: bold; display: block; margin-bottom: 8px;">住所</label>
-            <input type="text" name="address" class="ant-input" placeholder="大阪府大阪市...">
-        </div>
-
-        <div style="grid-template-columns: 1fr 1fr; display: grid; gap: 20px; margin-bottom: 20px;">
-            <div>
-                <label style="font-weight: bold; display: block; margin-bottom: 8px;">電話番号</label>
-                <input type="text" name="tel" class="ant-input" placeholder="090-0000-0000">
-            </div>
-            <div>
-                <label style="font-weight: bold; display: block; margin-bottom: 8px;">会社名</label>
-                <input type="text" name="company" class="ant-input" placeholder="株式会社◯◯">
+    <div class="ant-tabs ant-tabs-top">
+        <div class="ant-tabs-nav" role="tablist" style="margin-bottom: 30px;">
+            <div class="ant-tabs-nav-list" style="display: flex; border-bottom: 1px solid #f0f0f0; width: 100%;">
+                <a href="main.php" class="ant-tabs-tab" style="padding: 12px 24px; text-decoration: none; color: rgba(0,0,0,0.85);">🏠 メニュー</a>
+                <a href="customer_search.php" class="ant-tabs-tab" style="padding: 12px 24px; text-decoration: none; color: rgba(0,0,0,0.85);">🔍 検索・一覧</a>
+                <div class="ant-tabs-tab ant-tabs-tab-active" style="padding: 12px 24px; border-bottom: 2px solid #1890ff; color: #1890ff; font-weight: bold;">➕ 新規登録</div>
+                <a href="customer_edit_list.php" class="ant-tabs-tab" style="padding: 12px 24px; text-decoration: none; color: rgba(0,0,0,0.85);">⚙️ 項目カスタマイズ</a>
             </div>
         </div>
+    </div>
 
-        <div style="margin-bottom: 30px; padding: 15px; background: #fafafa; border-radius: 4px;">
-            <label style="font-weight: bold; margin-right: 20px;">党員区分：</label>
-            <label><input type="radio" name="is_party_member" value="1"> 党員</label>
-            <label style="margin-left: 15px;"><input type="radio" name="is_party_member" value="0" checked> 非党員</label>
-        </div>
+    <div class="ant-card ant-card-bordered" style="background: #fff; padding: 40px; border-radius: 8px; border: 1px solid #f0f0f0;">
+        <h2 style="margin-bottom: 30px; border-left: 5px solid #1890ff; padding-left: 15px;">👤 新規顧客登録</h2>
 
-        <div style="display: flex; gap: 15px;">
-            <a href="main.php" style="flex: 1;">
-                <button type="button" class="ant-btn ant-btn-default" style="width: 100%; height: 45px;">メニューに戻る</button>
-            </a>
-            <button type="submit" class="ant-btn ant-btn-primary" style="flex: 2; height: 45px; font-weight: bold;">
+        <form action="customer_register_process.php" method="POST">
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                <?php $col = find_col($columns, 'last_name'); if($col): ?>
+                    <div>
+                        <label style="font-weight: bold; display: block; margin-bottom: 8px;"><?php echo $col['label']; ?> <span style="color: red;">*</span></label>
+                        <input type="text" name="last_name" required placeholder="例：山田" class="ant-input" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                    </div>
+                <?php endif; ?>
+                <?php $col = find_col($columns, 'first_name'); if($col): ?>
+                    <div>
+                        <label style="font-weight: bold; display: block; margin-bottom: 8px;"><?php echo $col['label']; ?> <span style="color: red;">*</span></label>
+                        <input type="text" name="first_name" required placeholder="例：太郎" class="ant-input" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <?php $col = find_col($columns, 'address'); if($col): ?>
+                <div style="margin-bottom: 20px;">
+                    <label style="font-weight: bold; display: block; margin-bottom: 8px;"><?php echo $col['label']; ?></label>
+                    <input type="text" name="address" placeholder="例：大阪府大阪市中央区1-1-1" class="ant-input" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                </div>
+            <?php endif; ?>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                <?php $col = find_col($columns, 'mobile_tel'); if($col): ?>
+                    <div>
+                        <label style="font-weight: bold; display: block; margin-bottom: 8px;"><?php echo $col['label']; ?> <span style="color: red;">*</span></label>
+                        <input type="tel" name="mobile_tel" required placeholder="例：090-0000-0000" class="ant-input" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                    </div>
+                <?php endif; ?>
+                <?php $col = find_col($columns, 'fixed_tel'); if($col): ?>
+                    <div>
+                        <label style="font-weight: bold; display: block; margin-bottom: 8px;"><?php echo $col['label']; ?></label>
+                        <input type="tel" name="fixed_tel" placeholder="例：072-000-0000" class="ant-input" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <?php 
+            $standard_cols = ['reg_date', 'last_name', 'first_name', 'address', 'mobile_tel', 'fixed_tel', 'is_party_member'];
+            foreach ($columns as $col): 
+                if (in_array($col['name'], $standard_cols)) continue; 
+            ?>
+                <div style="margin-bottom: 20px;">
+                    <label style="font-weight: bold; display: block; margin-bottom: 8px;"><?php echo htmlspecialchars($col['label']); ?> <?php if($col['required']=='1') echo '<span style="color: red;">*</span>'; ?></label>
+                    <input type="<?php echo $col['type']; ?>" name="<?php echo $col['name']; ?>" placeholder="入力してください" class="ant-input" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                </div>
+            <?php endforeach; ?>
+
+<?php if ($col['type'] === 'radio' || $col['type'] === 'bool'): ?>
+    <div style="padding: 10px; background: #fafafa; border-radius: 4px;">
+        <label style="cursor: pointer;">
+            <input type="radio" name="<?php echo $col['name']; ?>" value="1" required> 
+            <?php echo ($col['type'] === 'radio') ? '党員' : 'YES'; ?>
+        </label>
+        <label style="margin-left: 20px; cursor: pointer;">
+            <input type="radio" name="<?php echo $col['name']; ?>" value="0"> 
+            <?php echo ($col['type'] === 'radio') ? '非党員' : 'NO'; ?>
+        </label>
+    </div>
+<?php else: ?>
+    <input type="<?php echo htmlspecialchars($col['type']); ?>" ...>
+<?php endif; ?>
+
+            <button type="submit" class="ant-btn ant-btn-primary" style="width: 100%; height: 45px; font-weight: bold; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer;">
                 この内容で登録する
             </button>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 
-<?php include 'inc/footer.php'; ?>
+<?php include 'inc/fotter.php'; ?>

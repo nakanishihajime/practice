@@ -1,49 +1,56 @@
 <?php
-// 共通関数の読み込み（incフォルダ内）
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 require_once 'inc/functions.php';
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// ログインチェック（未ログインなら追い返す）
-if (!isset($_SESSION['user_id'])) {
-    header('Location: index.php');
-    exit;
-}
-
-// POST送信以外は受け付けない
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    
-    // フォームデータの受け取り（連想配列にまとめる）
-    $customer_data = [
-        'name'            => $_POST['name'] ?? '',
-        'address'         => $_POST['address'] ?? '',
-        'tel'             => $_POST['tel'] ?? '',
-        'company'         => $_POST['company'] ?? '',
-        'is_party_member' => $_POST['is_party_member'] ?? 0
-    ];
-
-    // バリデーション：名前は必須（中西さんのルールに合わせて2文字以上など）
-    if (mb_strlen($customer_data['name']) < 1) {
-        $_SESSION['errors'] = ["氏名を入力してください。"];
-        header('Location: customer_register.php');
-        exit;
-    }
-
-    // 関数を呼び出してDB登録実行
-    if (insert_customer($customer_data)) {
-        // 成功：メインメニューに戻り、成功メッセージを出す
-        header('Location: main.php?msg=success');
-        exit;
-    } else {
-        // 失敗
-        $_SESSION['errors'] = ["データベース登録に失敗しました。"];
-        header('Location: customer_register.php');
-        exit;
-    }
-} else {
-    // POST以外でアクセスされたらメニューへ
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: main.php');
     exit;
+}
+
+// 1. 各項目を個別にクリーニング
+$last_name  = clean_input($_POST['last_name'] ?? '');
+$first_name = clean_input($_POST['first_name'] ?? '');
+$address    = clean_input($_POST['address'] ?? '');
+$mobile_tel = clean_input($_POST['mobile_tel'] ?? '');
+$fixed_tel  = clean_input($_POST['fixed_tel'] ?? '');
+$company    = clean_input($_POST['company'] ?? '');
+$is_party   = ($_POST['is_party_member'] === "1") ? '党員' : '非党員';
+
+// 2. 結合して「綺麗な氏名」を作る（間に必ず半角スペース1つ）
+$full_name = $last_name . ' ' . $first_name;
+
+// 3. バリデーション
+$errors = [];
+if (mb_strlen($last_name) < 1 || mb_strlen($first_name) < 1) {
+    $errors[] = "姓と名を両方入力してください。";
+}
+if (!is_valid_mobile($mobile_tel)) {
+    $errors[] = "携帯番号の形式が正しくありません(090-0000-0000)。";
+}
+if (!empty($fixed_tel) && !preg_match('/^[0-9-]+$/', $fixed_tel)) {
+    $errors[] = "固定電話は半角数字とハイフンのみで入力してください。";
+}
+
+if (!empty($errors)) {
+    $_SESSION['errors'] = $errors;
+    header('Location: customer_register.php');
+    exit;
+}
+
+// 4. 保存（7列構成：氏名は結合後のものを使用）
+$new_customer = [
+    date('Y-m-d H:i'),
+    $full_name,  // ここで綺麗に整った名前が入る
+    $address,
+    $mobile_tel,
+    $fixed_tel,
+    $company,
+    $is_party
+];
+
+if (save_to_csv($new_customer)) {
+    header('Location: customer_search.php?msg=success');
+    exit;
+} else {
+    exit("保存に失敗しました。");
 }

@@ -34,7 +34,7 @@ if (isset($_SESSION['user_id'])) {
     <div class="login-box">
         <h2 style="text-align: center; margin-bottom: 30px; color: #111;">顧客管理ツール <br>「管理くん」</h2>
         
-        <form action="main.php" method="POST">
+        <form action="login_process.php" method="POST">
             <input type="text" name="user_id" class="ant-input" placeholder="ユーザーID" required>
             <input type="password" name="password" class="ant-input" placeholder="パスワード" required>
             <button type="submit" class="ant-btn ant-btn-primary">ログイン</button>
