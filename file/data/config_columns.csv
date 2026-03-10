@@ -6,7 +6,5 @@
 5,固定電話,fixed_tel,tel,0
 6,会社名,company,text,0
 7,党員区分,is_party_member,radio,0
-8,紹介者,introduce,text,09,3/2イベント参加,event1,text,0
-9,イベント参加,event2,text,0
-10,3/2イベント参加,event1,text,0
-11,5/4イベント参加,event3,bool,0
+8,紹介者,introduser,text,0
+9,テスト,test,text,0

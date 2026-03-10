@@ -78,6 +78,17 @@ $columns = get_config_columns();
                                     <span style="color: #52c41a; font-size: 12px;">追加項目</span>
                                 <?php endif; ?>
                             </td>
+                            <th style="padding: 12px; text-align: center; width: 10%;">操作</th>
+
+<td style="padding: 12px; text-align: center;">
+    <?php if ((int)$col['id'] >= 8): // ID 8以降（追加項目）のみ削除可能にする ?>
+        <a href="column_delete_process.php?id=<?php echo $col['id']; ?>" 
+           onclick="return confirm('この項目を削除しますか？（入力済みのデータがある場合は列がズレる可能性があります）')"
+           style="color: #ff4d4f; text-decoration: none; font-size: 12px;">削除</a>
+    <?php else: ?>
+        <span style="color: #bfbfbf; font-size: 12px;">-</span>
+    <?php endif; ?>
+</td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

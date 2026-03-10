@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         // エラーがない場合のみDB登録
-        $hashed_password = hash_password($password);
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         $pdo = get_db_connection();
         
         $sql = "INSERT INTO users (user_id, password, display_name) VALUES (?, ?, ?)";
