@@ -2,23 +2,23 @@
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 require_once 'inc/functions.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['index'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['index']) && isset($_SESSION['user_id'])) {
+    
     $index = (int)$_POST['index'];
+    $user_id = $_SESSION['user_id'];
+    $file_path = "data/customers_{$user_id}.csv";
     $columns = get_config_columns();
     
-    // --- バリデーション実行 ---
+    // --- 1. バリデーション実行 ---
     foreach ($columns as $idx => $col) {
         $val = isset($_POST['col_' . $idx]) ? trim($_POST['col_' . $idx]) : '';
-        
-        // 必須チェック（config_columns.csv の必須フラグを参照）
         if ($col['required'] == '1' && $val === '') {
             header("Location: customer_edit_form.php?id=$index&error=required");
             exit;
         }
     }
 
-    // --- 保存処理 (前回の文字化け対策版コードを継続) ---
-    $file_path = 'data/customers.csv';
+    // --- 2. 該当ユーザーの全データを一旦読み込む ---
     $all_data = [];
     if (file_exists($file_path)) {
         $handle = fopen($file_path, 'r');
@@ -29,14 +29,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['index'])) {
         fclose($handle);
     }
 
+    // --- 3. 編集対象の行をフォームの値で上書き ---
     if (isset($all_data[$index])) {
         $new_row = [];
         foreach ($columns as $idx => $col) {
-            $new_row[$idx] = isset($_POST['col_' . $idx]) ? $_POST['col_' . $idx] : $all_data[$index][$idx];
+            // フォームから送られてきた col_X の値を採用
+            if (isset($_POST['col_' . $idx])) {
+                $new_row[$idx] = $_POST['col_' . $idx];
+            } else {
+                // 送られてきていない場合は元の値を維持（自動生成項目など）
+                $new_row[$idx] = $all_data[$index][$idx] ?? '';
+            }
         }
         $all_data[$index] = $new_row;
     }
 
+    // --- 4. CSVを書き込み保存（文字化け対策込み） ---
     $handle = fopen($file_path, 'w');
     foreach ($all_data as $row) {
         mb_convert_variables('SJIS-win', 'UTF-8', $row);
@@ -47,3 +55,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['index'])) {
     header('Location: customer_search.php?msg=updated');
     exit;
 }
+
+header('Location: main.php');
+exit;

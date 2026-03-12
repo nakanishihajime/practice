@@ -2,7 +2,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-// 関数の読み込み（パスを調整）
+// 関数の読み込み
 require_once __DIR__ . '/functions.php';
 ?>
 <!DOCTYPE html>
@@ -20,21 +20,33 @@ require_once __DIR__ . '/functions.php';
             align-items: center; 
             justify-content: space-between; 
             padding: 0 24px; 
-            height: 72px; /* ロゴに合わせて少し高さを上げます */
+            height: 72px; 
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
         .logo-link { display: flex; align-items: center; text-decoration: none; transition: opacity 0.3s; }
         .logo-link:hover { opacity: 0.85; }
         
-        /* 差し込むロゴのスタイル */
         .logo-image { 
-            height: 48px; /* ヘッダーの高さに合わせたサイズ */
+            height: 48px; 
             width: auto; 
-            margin-right: 14px; /* テキストとの間隔 */
+            margin-right: 14px; 
         }
         
         .logo-title { color: white; margin: 0; font-size: 22px; font-weight: bold; letter-spacing: 1px; }
-        .nav-menu { color: white; }
+        .nav-menu { display: flex; align-items: center; color: white; }
+        .logout-btn { 
+            color: #ff4d4f; 
+            font-weight: bold; 
+            border: 1px solid #ff4d4f; 
+            padding: 0.00000001px 8px; 
+            border-radius: 4px; 
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .logout-btn:hover { 
+            background: #ff4d4f; 
+            color: white; 
+        }
         .main-content { flex: 1; padding: 24px; }
     </style>
 </head>
@@ -46,9 +58,16 @@ require_once __DIR__ . '/functions.php';
         </a>
 
         <div class="nav-menu">
-            <?php if (isset($_SESSION['display_name'])): ?>
-                <span style="margin-right: 15px; color: rgba(255,255,255,0.85);">ようこそ、<?php echo htmlspecialchars($_SESSION['display_name']); ?> さん</span>
-                <a href="logout.php" style="color: #ff4d4f; font-weight: bold; border: 1px solid #ff4d4f; padding: 4px 12px; border-radius: 4px;">ログアウト</a>
+            <?php 
+            // セッションに名前が入っているか確認（ログイン時のみ表示）
+            if (isset($_SESSION['display_name'])): 
+            ?>
+                <span style="margin-right: 20px; color: rgba(255,255,255,0.85); font-size: 14px;">
+                    👤 ようこそ、<strong><?php echo htmlspecialchars($_SESSION['display_name']); ?></strong> さん
+                </span>
+                <a href="logout.php" class="logout-btn" onclick="return confirm('ログアウトしてもよろしいですか？')">
+                    ログアウト
+                </a>
             <?php endif; ?>
         </div>
     </header>

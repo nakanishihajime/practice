@@ -11,7 +11,8 @@ if (!isset($_SESSION['user_id'])) {
 
 // --- 顧客数を正確にカウントするロジック ---
 $customer_count = 0;
-$file_path = 'data/customers.csv';
+$user_id = $_SESSION['user_id']; // 追加
+$file_path = "data/customers_{$user_id}.csv"; // 修正
 
 if (file_exists($file_path)) {
     $handle = fopen($file_path, 'r');
@@ -34,13 +35,16 @@ $user_name = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'ゲスト
         <div class="ant-tabs-nav" role="tablist" style="margin-bottom: 30px;">
             <div class="ant-tabs-nav-wrap">
                 <div class="ant-tabs-nav-list" style="display: flex; border-bottom: 1px solid #f0f0f0; width: 100%;">
-                    <a href="main.php" class="ant-tabs-tab" style="padding: 12px 24px; text-decoration: none; color: rgba(0,0,0,0.85);">🏠 ホーム</a>
-                    <div class="ant-tabs-tab ant-tabs-tab-active" style="padding: 12px 24px; border-bottom: 2px solid #1890ff;">
-                        <div class="ant-tabs-tab-btn" style="color: #1890ff; font-weight: bold;">🔍 検索・一覧</div>
-                    </div>
-                    <a href="customer_register.php" class="ant-tabs-tab" style="padding: 12px 24px; text-decoration: none; color: rgba(0,0,0,0.85);">➕ 新規登録</a>
-                    <a href="customer_edit.php" class="ant-tabs-tab" style="padding: 12px 24px; text-decoration: none; color: rgba(0,0,0,0.85);">⚙️ 項目カスタマイズ</a>
-                </div>
+    <div class="ant-tabs-tab ant-tabs-tab-active" style="padding: 12px 24px; border-bottom: 2px solid #1890ff;">
+        <div class="ant-tabs-tab-btn" style="color: #1890ff; font-weight: bold;">🏠 ホーム</div>
+    </div>
+
+    <a href="customer_search.php" class="ant-tabs-tab" style="padding: 12px 24px; text-decoration: none; color: rgba(0,0,0,0.85);">🔍 検索・一覧</a>
+
+    <a href="customer_register.php" class="ant-tabs-tab" style="padding: 12px 24px; text-decoration: none; color: rgba(0,0,0,0.85);">➕ 新規登録</a>
+
+    <a href="customer_edit.php" class="ant-tabs-tab" style="padding: 12px 24px; text-decoration: none; color: rgba(0,0,0,0.85);">⚙️ 項目カスタマイズ</a>
+</div>
             </div>
         </div>
     </div>

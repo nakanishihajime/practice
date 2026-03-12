@@ -2,9 +2,12 @@
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 require_once 'inc/functions.php';
 
-// 1. POST送信チェック
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $file_path = 'data/customers.csv';
+// 1. ログインチェックとPOST送信チェック
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
+    
+    // ログイン中のユーザーIDを取得してファイルパスを決定
+    $user_id = $_SESSION['user_id'];
+    $file_path = "data/customers_{$user_id}.csv";
     
     // 設定ファイルから現在の「正しい項目の並び順」を取得
     $columns = get_config_columns();
@@ -29,44 +32,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             continue;
         }
         if ($key === 'first_name') {
-            // 「名」は上記の「姓」の処理で結合済みなので、CSVの列としてはスキップ
-            continue; 
+            continue; // 「名」は結合済みなのでスキップ
         }
 
-        // C. 党員区分（既存のradioタイプ）
-        if ($key === 'is_party_member') {
-            $val = $_POST[$key] ?? '0';
-            $new_data[] = ($val === '1') ? '党員' : '非党員';
+        // C. 党員区分
+        if ($key === 'is_party_member' || strpos($col['label'], '党員区分') !== false) {
+            $new_data[] = $_POST['col_' . array_search($col, $columns)] ?? ($_POST[$key] ?? '非党員');
             continue;
         }
 
-        // D. 新設：2択タイプ（boolタイプ）
-        if ($type === 'bool') {
-            $val = $_POST[$key] ?? '0';
-            $new_data[] = ($val === '1') ? 'YES' : 'NO';
-            continue;
-        }
-
-        // E. その他一般項目（住所、電話、追加テキストなど）
-        $new_data[] = $_POST[$key] ?? '';
+        // D. その他一般項目
+        // 編集画面と共通の col_X 形式、または新規登録の name 形式の両方に対応
+        $val = $_POST['col_' . array_search($col, $columns)] ?? ($_POST[$key] ?? '');
+        $new_data[] = trim($val);
     }
 
     // 3. CSVに書き込み（Excel対応のためSJIS-winに変換）
-    if (file_exists($file_path)) {
-        $handle = fopen($file_path, 'a');
-        
-        // 配列の中身をすべてSJISに変換
-        mb_convert_variables('SJIS-win', 'UTF-8', $new_data);
-        
-        fputcsv($handle, $new_data);
-        fclose($handle);
-    }
+    // 'a' モードなので、ファイルがなければ作成、あれば追記されます
+    $handle = fopen($file_path, 'a');
+    mb_convert_variables('SJIS-win', 'UTF-8', $new_data);
+    fputcsv($handle, $new_data);
+    fclose($handle);
 
     // 4. 完了後に検索画面へ戻る
     header('Location: customer_search.php?msg=success');
     exit;
 }
 
-// 不正アクセス時は登録画面へ
 header('Location: customer_register.php');
 exit;
