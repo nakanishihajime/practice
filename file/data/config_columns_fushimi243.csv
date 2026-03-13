@@ -6,3 +6,4 @@
 5,固定電話,fixed_tel,tel,0
 6,会社名,company,text,0
 7,党員区分,is_party_member,radio,0
+8,3/2〇〇イベント,f_0302event,bool,0

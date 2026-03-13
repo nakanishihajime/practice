@@ -6,3 +6,5 @@
 5,固定電話,fixed_tel,tel,0
 6,会社名,company,text,0
 7,党員区分,is_party_member,radio,0
+8,9/5〇イベント,admin3,text,0
+9,5/4〇〇イベント,admin2,text,0

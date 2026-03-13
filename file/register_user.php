@@ -1,17 +1,17 @@
 <?php
-session_start();
-require_once __DIR__. '/inc/head.php';
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+
+// ログイン前ページなので、メニュー無しのシンプルなヘッダーを読み込む
+// (または head.php 内でログインチェックをしている場合は、ここでの読み込み順に注意)
+require_once __DIR__ . '/inc/head.php'; 
+
 // セッションからエラーメッセージと入力済みデータを取得
 $errors = $_SESSION['errors'] ?? [];
 $old = $_SESSION['old'] ?? [];
 
-// 一度変数に代入したらセッションからは削除（リロード時に消えるようにする）
 unset($_SESSION['errors']);
 unset($_SESSION['old']);
 
-/**
- * 特定のキーワードを含むエラーメッセージを抽出する関数
- */
 function get_error_message($errors, $keyword) {
     foreach ($errors as $error) {
         if (strpos($error, $keyword) !== false) {
@@ -30,7 +30,7 @@ function get_error_message($errors, $keyword) {
     <style>
         body { background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; }
         .register-box { width: 450px; padding: 40px; background: #fff; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
-        .label { font-weight: bold; margin-bottom: 5px; display: block; color: #444; }
+        .label { font-weight: bold; margin-bottom: 10px; display: block; color: #444; }
         .ant-input { height: 45px; margin-bottom: 20px; border-radius: 6px; font-size: 16px; }
         .error-text { color: #ff4d4f; font-size: 13px; margin-bottom: 5px; font-weight: bold; }
         .btn-group { display: flex; gap: 10px; margin-top: 10px; }

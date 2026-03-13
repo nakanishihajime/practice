@@ -21,12 +21,8 @@ function get_db_connection() {
  * 入力値を綺麗にする（全角を半角に、姓名間のスペースを半角1つに統一）
  */
 function clean_input($data) {
-    // 1. 全角英数字・全角スペースをすべて半角に変換
     $data = mb_convert_kana($data, "as", "UTF-8");
-    
-    // 2. 姓名の間の空白などが複数（2つ以上）ある場合に、半角1つにまとめる
     $data = preg_replace('/\s+/', ' ', $data);
-    
     return trim($data);
 }
 
@@ -38,19 +34,27 @@ function is_valid_mobile($tel) {
 }
 
 /**
- * CSV保存用関数
+ * ユーザー専用の顧客CSVパスを取得する
+ */
+function get_user_customer_file() {
+    $user_id = $_SESSION['user_id'] ?? 'default';
+    return __DIR__ . "/../data/customers_{$user_id}.csv";
+}
+
+/**
+ * CSV保存用関数（ユーザー別ファイルに保存）
  */
 function save_to_csv($data_array) {
-    $file_path = __DIR__ . '/../data/customers.csv';
-    // ディレクトリがなければ作成
+    $file_path = get_user_customer_file();
+    
     if (!is_dir(dirname($file_path))) {
         mkdir(dirname($file_path), 0777, true);
     }
     
-    // Excelで開けるように文字コードをSJIS-winに変換
-    mb_convert_variables('SJIS-win', 'UTF-8', $data_array);
+    // 開発中の文字化けを防ぐため、UTF-8で統一（Excel用変換が必要な場合は戻してください）
+    // mb_convert_variables('SJIS-win', 'UTF-8', $data_array);
     
-    $handle = fopen($file_path, 'a'); // 追記モード
+    $handle = fopen($file_path, 'a');
     if ($handle) {
         fputcsv($handle, $data_array);
         fclose($handle);
@@ -59,7 +63,9 @@ function save_to_csv($data_array) {
     return false;
 }
 
-// ユーザー登録バリデーション
+/**
+ * ユーザー登録バリデーション
+ */
 function validate_registration($display_name, $user_id, $password) {
     $errors = [];
     if (mb_strlen($display_name) < 2) $errors[] = "登録名は2文字以上で入力してください。";
@@ -69,37 +75,56 @@ function validate_registration($display_name, $user_id, $password) {
     return $errors;
 }
 
-// 削除関数
+/**
+ * 削除関数（ユーザー別ファイルから削除）
+ */
 function delete_customer_by_index($target_index) {
-    $file_path = __DIR__ . '/../data/customers.csv';
+    $file_path = get_user_customer_file();
+    
     if (!file_exists($file_path)) return false;
+    
     $rows = [];
     $handle = fopen($file_path, 'r');
-    while (($data = fgetcsv($handle)) !== FALSE) { $rows[] = $data; }
+    while (($data = fgetcsv($handle)) !== FALSE) {
+        $rows[] = $data;
+    }
     fclose($handle);
+    
     if (isset($rows[$target_index])) {
         unset($rows[$target_index]);
         $handle = fopen($file_path, 'w');
-        foreach ($rows as $row) { fputcsv($handle, $row); }
+        foreach ($rows as $row) {
+            fputcsv($handle, $row);
+        }
         fclose($handle);
         return true;
     }
     return false;
 }
 
+/**
+ * ユーザー別のカラム設定を取得
+ */
 function get_config_columns() {
-    $file_path = __DIR__ . '/../data/config_columns.csv';
+    $user_id = $_SESSION['user_id'] ?? 'default';
+    $file_path = __DIR__ . "/../data/config_columns_{$user_id}.csv";
+    $default_file = __DIR__ . "/../data/config_columns.csv";
+
+    // ユーザー専用設定がない場合はデフォルトをコピー
+    if (!file_exists($file_path) && file_exists($default_file)) {
+        copy($default_file, $file_path);
+    }
+
     $columns = [];
-    if (file_exists($file_path)) {
-        $handle = fopen($file_path, 'r');
+    if (file_exists($file_path) && ($handle = fopen($file_path, "r")) !== FALSE) {
         while (($data = fgetcsv($handle)) !== FALSE) {
-            // 文字コード変換をあえて外して、そのまま読み込みます
+            // 保存形式: [ID, 表示名, システム識別名, タイプ, 必須]
             $columns[] = [
-                'id' => $data[0],
-                'label' => $data[1],
-                'name' => $data[2],
-                'type' => $data[3],
-                'required' => $data[4]
+                'id'       => $data[0] ?? '',
+                'label'    => $data[1] ?? '',
+                'name'     => $data[2] ?? '',
+                'type'     => $data[3] ?? '',
+                'required' => $data[4] ?? '0'
             ];
         }
         fclose($handle);

@@ -34,7 +34,7 @@ if (!isset($_SESSION['user_id'])) { header('Location: index.php'); exit; }
                 <option value="tel">電話番号</option>
                 <option value="number">数値</option>
                 <option value="date">日付</option>
-                <option value="bool">2択（YES/NO）</option> </select>
+                
                 </select>
             </div>
 
