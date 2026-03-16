@@ -1,8 +1,0 @@
-0,登録日時,reg_date,text,1
-1,姓,last_name,text,1
-2,名,first_name,text,1
-3,住所,address,text,0
-4,携帯番号,mobile_tel,tel,1
-5,固定電話,fixed_tel,tel,0
-6,会社名,company,text,0
-7,党員区分,is_party_member,radio,0

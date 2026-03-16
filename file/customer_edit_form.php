@@ -9,15 +9,15 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : -1;
 $user_id = $_SESSION['user_id'];
 $columns = get_config_columns();
 
-// ファイル名を検索画面と完全に一致させる
 $file_path = "data/customers_{$user_id}.csv";
-
 $customer_data = [];
+
 if (file_exists($file_path)) {
     $handle = fopen($file_path, 'r');
     $current_index = 0;
     while (($data = fgetcsv($handle)) !== FALSE) {
         if ($current_index === $id) {
+            // 文字コード変換（CSVがSJIS-winの場合）
             mb_convert_variables('UTF-8', 'SJIS-win', $data);
             $customer_data = $data;
             break;
@@ -27,9 +27,8 @@ if (file_exists($file_path)) {
     fclose($handle);
 }
 
-// データが見つからない場合の処理
 if (empty($customer_data)) {
-    echo "<div style='padding:50px; text-align:center;'><h3>⚠️ データが見つかりません</h3><p>ID: {$id} のデータが存在しないか、読み込めませんでした。</p><a href='customer_search.php'>一覧に戻る</a></div>";
+    echo "<div style='padding:50px; text-align:center;'><h3>⚠️ データが見つかりません</h3><a href='customer_search.php'>一覧に戻る</a></div>";
     include 'inc/fotter.php';
     exit;
 }
@@ -49,10 +48,14 @@ if (empty($customer_data)) {
                     <?php echo htmlspecialchars($col['label']); ?>
                 </label>
                 
-                <?php if (strpos($col['label'], '党員区分') !== false): ?>
+                <?php if (mb_strpos($col['label'], '党員区分') !== false): ?>
                     <select name="col_<?php echo $idx; ?>" style="width: 100%; padding: 10px; border: 1px solid #d9d9d9; border-radius: 4px;">
-                        <option value="非党員" <?php if($current_val !== '1' && $current_val !== '党員') echo 'selected'; ?>>非党員</option>
-                        <option value="党員" <?php if($current_val === '1' || $current_val === '党員') echo 'selected'; ?>>党員</option>
+                        <?php 
+                        // 「党員」または「1」であれば党員として判定
+                        $is_member = ($current_val === '党員' || $current_val === '1'); 
+                        ?>
+                        <option value="非党員" <?php if(!$is_member) echo 'selected'; ?>>非党員</option>
+                        <option value="党員" <?php if($is_member) echo 'selected'; ?>>党員</option>
                     </select>
                 <?php else: ?>
                     <input type="text" name="col_<?php echo $idx; ?>" value="<?php echo htmlspecialchars($current_val); ?>" style="width: 100%; padding: 10px; border: 1px solid #d9d9d9; border-radius: 4px;">
